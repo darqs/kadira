@@ -6,7 +6,6 @@ import { fromString } from 'html-to-text';
 import request from 'request';
 import { parse } from 'url';
 import promiseRetry from 'promise-retry';
-import librato from 'librato-node';
 import { isSlackUrl } from './utils';
 
 const debug = require('debug')('alertsman:messenger');
@@ -117,9 +116,6 @@ export default class Messenger {
     }, retryOptions);
 
     return retryPromise
-    .then(() => {
-      librato.increment('emails_sent');
-    })
     .catch(err => {
       error(`Sending email failed: ${err.stack}`);
     });
@@ -137,13 +133,6 @@ export default class Messenger {
     }, retryOptions);
 
     let promise = retryPromise
-    .then(() => {
-      if (isSlackUrl(uri)) {
-        librato.increment('slack_webhooks_called');
-      } else {
-        librato.increment('ordinary_webhooks_called');
-      }
-    })
     .catch(err => {
       error(`Calling webhook failed: ${err.stack}`);
     });

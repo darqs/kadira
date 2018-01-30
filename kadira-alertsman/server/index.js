@@ -8,7 +8,6 @@ import Messenger from './messenger';
 import { processAlone } from './utils';
 import { MongoClient } from 'mongodb';
 import MongoOplog from 'mongo-oplog';
-import librato from 'librato-node';
 import * as urlShortener from './url_shortener';
 const debug = require('debug')('alertsman:index');
 const { info, error } = console;
@@ -21,10 +20,6 @@ const {
   MAIL_URL,
   TICK_TRIGGER_INTERVAL = 1000 * 10,
   MESSENGER_LOGGING_ONLY,
-  LIBRATO_EMAIL,
-  LIBRATO_TOKEN,
-  LIBRATO_PUSH_INTERVAL = 1000 * 60,
-  LIBRATO_METRICS_PREFIX = 'alertsman.',
   GOOGLE_DEV_KEY
 } = process.env;
 
@@ -39,14 +34,6 @@ const {
     const metricsStore = new MetricsStore(KADIRA_API_URL);
     const rules = new RuleEngine();
     const messenger = new Messenger(MAIL_URL, {loggingOnly: Boolean(MESSENGER_LOGGING_ONLY)});
-
-    librato.configure({
-      email: LIBRATO_EMAIL,
-      token: LIBRATO_TOKEN,
-      period: LIBRATO_PUSH_INTERVAL,
-      prefix: LIBRATO_METRICS_PREFIX
-    });
-    librato.start();
 
     urlShortener.setGoogleDevKey(GOOGLE_DEV_KEY);
 
@@ -74,7 +61,6 @@ const {
         // We don't need to wait until the trigger sends
         // to mark the alert as armed.
         messenger.sendTriggered(alert, checkedResult);
-        librato.increment('triggers');
         await alertsStore.setArmed(alert, true);
         return;
       }
@@ -83,12 +69,9 @@ const {
         // We don't need to wait until the trigger sends
         // to mark the alert as cleared.
         messenger.sendCleared(alert, checkedResult);
-        librato.increment('clears');
         await alertsStore.setArmed(alert, false);
         return;
       }
-
-      librato.increment('checkes');
     };
 
     tickManager
