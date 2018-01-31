@@ -1,0 +1,97 @@
+version: '2'
+
+services:
+  mongo:
+    image: mongo:3.2
+    volumes:
+      - "/opt/kadira-mongo:/data/db"
+    command: mongod --smallfiles --replSet kadira
+    ports:
+      - "27017:27017"
+    restart: always
+
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "22022:443"
+      - "443:443"
+    
+    volumes:
+      - "/etc/nginx/vhost.d"
+      - "/usr/share/nginx/html"
+      - "/var/run/docker.sock:/tmp/docker.sock:ro"
+      - "/etc/nginx/certs"
+    restart: always
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    volumes_from:
+      - nginx-proxy
+    restart: always
+    
+  kadira-alertsman:
+    build: ./kadira-alertsman
+    environment:
+      - APP_DB_URL=mongodb://mongo/kadira
+      - APP_DB_OPLOG_URL=mongodb://mongo/kadira
+      - KADIRA_API_URL=http://root:secret@kadira-api:7007/core
+      - MAIL_URL=smtp://user:pass@smtp.mailgun.org:587
+      - TICK_TRIGGER_INTERVAL=10000
+      - MESSENGER_LOGGING_ONLY=1
+    links:
+      - mongo
+      - kadira-api
+    restart: always
+
+  kadira-api:
+    build: ./kadira-api
+    ports:
+      - "7007:7007"
+    environment:
+      - PORT=7007
+      - MONGO_APP_URL=mongodb://mongo/kadira
+      - MONGO_SHARD_URL_one=mongodb://mongo/kadira
+      - MAIL_URL=smtp://user:pass@smtp.mailgun.org:587
+      - AUTH_SECRET=secret
+      - JWT_SECRET=secret
+      - JWT_LIFETIME=1d
+    links:
+      - mongo
+    restart: always
+    
+  kadira-engine:
+    image: vladgolubev/kadira-engine
+    ports:
+      - "11011:11011"
+    environment:
+      - PORT=11011
+      - MONGO_URL=mongodb://mongo/kadira?replicaSet=kadira
+      - MONGO_SHARD_URL_one=mongodb://mongo/kadira?replicaSet=kadira
+      - VIRTUAL_HOST=${HOST}
+      - HTTPS_METHOD=noredirect
+      - LETSENCRYPT_HOST=${HOST}
+      - LETSENCRYPT_EMAIL=${EMAIL}
+    links:
+      - mongo
+    restart: always
+
+  kadira-rma:
+    image: vladgolubev/kadira-rma
+    environment:
+      - MONGO_URL=mongodb://mongo/kadira
+    links:
+      - mongo
+    restart: always
+
+  kadira-ui:
+    image: vladgolubev/kadira-ui
+    ports:
+      - "4000:4000"
+    environment:
+      - MONGO_URL=mongodb://mongo/kadira
+      - MONGO_SHARD_URL_one=mongodb://mongo/kadira
+    links:
+      - mongo
+    restart: always
