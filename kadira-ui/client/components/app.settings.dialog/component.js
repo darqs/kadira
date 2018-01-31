@@ -28,23 +28,6 @@ component.state.currentAppSecret = function() {
   return app.secret;
 };
 
-component.action.savePricingType = function(newPricingType) {
-  var appId = FlowRouter.getParam("appId");
-  Meteor.call("apps.updatePricingType", appId, newPricingType, (err) => {
-    if(err) {
-      // reset UI
-      var app = Apps.findOne({_id: appId}, {fields: {pricingType: 1}});
-      var oldPricingType = app.pricingType;
-      this.set("pricingType", newPricingType);
-      this.set("pricingType", oldPricingType);
-
-      growlAlert.error(err.reason);
-    } else {
-      growlAlert.success("Updated app successfully.");
-    }
-  });
-};
-
 component.action.updateAppName = function(appName) {
   var appId = FlowRouter.getParam("appId");
   Meteor.call("apps.updateName", appId, appName, function(err) {
