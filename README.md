@@ -40,3 +40,8 @@ Only 1 environment variable needed! `KADIRA_MONGO_URL`
 2. Start server - `docker-compose up`
 3. Navigate to `localhost:4000` - Kadira is ready. Engine is on port 11011
 4. Login as `admin@gmail.com` / `admin` and change the password
+
+
+# Changes
+
+I based on [edemaine/kadira-compose](https://github.com/edemaine/kadira-compose), but I need `kadira-alertsman`.
