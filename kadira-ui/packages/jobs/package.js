@@ -3,11 +3,9 @@ Package.describe({
   name: "local:jobs"
 });
 
-Npm.depends({"aws-sdk": "2.0.18"});
-
 Package.on_use(function (api, where) {
   configurePackage(api);
-  
+
   api.export(['Job','Jobs'], ['client', 'server']);
   api.export(['JobsCollection'], {testOnly: true});
 });

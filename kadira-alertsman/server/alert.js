@@ -11,6 +11,7 @@ export default class Alert {
     this.triggers = alert.triggers || [];
     this.appName = alert.appName;
     this.armedDate = alert.armedDate;
+    this.isHealthCheck = alert.isHealthCheck || false;
     this.lastCheckedDate = alert.lastCheckedDate;
     this.lastArmedClearedDate = alert.lastArmedClearedDate;
   }

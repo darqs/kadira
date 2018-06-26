@@ -32,7 +32,7 @@ services:
     restart: always
     
   kadira-alertsman:
-    build: ./kadira-alertsman
+    image: cctechnology/kadira-alertsman
     environment:
       - APP_DB_URL=mongodb://mongo/kadira
       - APP_DB_OPLOG_URL=mongodb://mongo/kadira
@@ -46,7 +46,7 @@ services:
     restart: always
 
   kadira-api:
-    build: ./kadira-api
+    image: cctechnology/kadira-api
     ports:
       - "7007:7007"
     environment:
@@ -86,7 +86,7 @@ services:
     restart: always
 
   kadira-ui:
-    image: vladgolubev/kadira-ui
+    image: cctechnology/kadira-ui
     ports:
       - "4000:4000"
     environment:

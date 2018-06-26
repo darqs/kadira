@@ -1,25 +1,7 @@
-var AWS = Npm.require('aws-sdk');
-
-var createAWSFile = function(jobId, callback){
-  callback = callback || function(){};
-  var s3 = new AWS.S3();
-
-  AWS.config.region = 'us-east-1';
-  var params = {
-    Bucket: 'profdata.kadira.io',
-    ContentType: 'application/json',
-    ACL: 'public-read'
-  };
-  params['Key'] = jobId + '.js';
-
-  s3.getSignedUrl('putObject', params, callback);
-}
-
-var createAWSFileAsync = Meteor.wrapAsync(createAWSFile);
-
 Meteor.methods({
   createOrUpdateJob: _createOrUpdateJob,
-  deleteJob: _deleteJob
+  deleteJob: _deleteJob,
+  getProfilesUrl: _getProfilesUrl
 });
 
 function _deleteJob(jobId){
@@ -40,6 +22,10 @@ function _deleteJob(jobId){
   JobsCollection.remove(jobId);
 }
 
+function _createSomeUrl(jobId) {
+  return `${process.env.DEBUG_PROFILER_URL}/kadira/profile/${jobId}_${Date.now()}`;
+}
+
 function _createOrUpdateJob (jobId, jobInfo) {
   check(jobId, String);
   check(jobInfo, Object);
@@ -52,10 +38,6 @@ function _createOrUpdateJob (jobId, jobInfo) {
   if(!isValidName){
     throw new Meteor.Error(403, i18n('alerts.invalid_job_name'));
   }
-
-  var appId = jobInfo.appId;
-  var app = Apps.findOne({_id: appId});
-  app = app || {};
 
   var plan = Utils.getPlanForTheApp(jobInfo.appId);
   if(!PlansManager.allowFeature('profiler', plan)){
@@ -72,8 +54,12 @@ function _createOrUpdateJob (jobId, jobInfo) {
   var createdAt = new Date();
   jobInfo.updatedAt = new Date();
 
-  var url = createAWSFileAsync(jobId);
+  var url = _createSomeUrl(jobId);
   jobInfo['data.uploadUrl'] = url;
   var fields = { $set: jobInfo, $setOnInsert: {"createdAt": createdAt}};
   JobsCollection.update({_id :jobId}, fields, {upsert: true});
+}
+
+function _getProfilesUrl() {
+    return `${process.env.DEBUG_PROFILER_URL}`;
 }

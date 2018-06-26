@@ -15,7 +15,8 @@
     "lint": "npm run lintcore -- ./server",
     "lintfix": "npm run lint -- --fix",
     "testonly": "./node_modules/.bin/mocha $npm_package_options_mocha",
-    "test": "npm run lint && npm run testonly"
+    "test": "npm run lint && npm run testonly",
+    "deploy": "docker build -t cctechnology/kadira-alertsman . && docker push cctechnology/kadira-alertsman"
   },
   "devDependencies": {
     "nodemon": "1.x.x",

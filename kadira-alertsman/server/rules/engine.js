@@ -52,13 +52,14 @@ export default class RulesEngine {
   check(alert, streamsMap) {
     const checkedStreamsMap = {};
     const predicates = alert.getPredicates();
+    const { isHealthCheck } = alert;
 
     _.each(streamsMap, (stream, host) => {
       const validatedSteam = this._normalizePoints(alert, stream);
       const checkedPointsStream = validatedSteam
         .map(this._checkSinglePoint.bind(this, predicates.singlePoint));
       const checkedWholeStream =
-        this._checkStream(predicates.singleStream, checkedPointsStream);
+        this._checkStream(predicates.singleStream, checkedPointsStream, isHealthCheck);
 
       checkedStreamsMap[host] = checkedWholeStream;
     });
@@ -136,8 +137,17 @@ export default class RulesEngine {
     return payload;
   }
 
-  _checkStream({duration}, resultStream) {
+  _checkStream({duration}, resultStream, isHealthCheck) {
     if (!duration) {
+      // there is no data but it's health check
+      if (resultStream.length === 0 && isHealthCheck) {
+          const data = {
+              value: 0,
+              timestamp: Date.now()
+          };
+          return {success: true, data: { data }};
+      }
+
       // Al least one point needs to be success
       for (const checkedPoint of resultStream) {
         if (checkedPoint.success) {
