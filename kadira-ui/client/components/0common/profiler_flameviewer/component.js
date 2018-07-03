@@ -160,6 +160,10 @@ component.prototype._generatePath = function(pathId) {
   return container;
 
   function renderNode(node, depth) {
+    if (!node) {
+      return;
+    }
+
     depth = depth || 0;
     node = _.clone(node);
     node.viewer = self;

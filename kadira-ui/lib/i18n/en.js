@@ -142,6 +142,7 @@ strings.tools = {
   "delete_job_success": "profile deleted",
   "take_a_local_profile": "Take a Local Profile",
   "learn_how_to_analyze_profile": "Learn how to analyze a CPU Profile",
+  "download_profile_file": "Download profile",
   "cpu_analyzer": "CPU Analyzer",
   "could_not_load_cpu_profile": "Could not load CPU profile"
 };

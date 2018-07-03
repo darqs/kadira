@@ -1,5 +1,23 @@
+const getProfileUrl = (cb) => {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    'GET',
+    `${Meteor._localStorage.getItem('debug.profiler.url')}/${FlowRouter.getQueryParam("id")}.js`
+  );
+  xhr.onload = () => { cb(xhr.response); };
+  xhr.send();
+};
+
 var component = FlowComponents.define("app.tools.cpu.analyse", function(props) {
   this.setFn("jobInfo", props.jobInfoFn);
+  getProfileUrl((response) => {
+    this.set(
+      'jobDetailsUrl',
+      window.URL.createObjectURL(
+        new Blob([response], {type: 'text/plain'})
+      )
+    );
+  });
 
   this.onRendered(function() {
     this.autorun(function() {
@@ -37,7 +55,10 @@ component.state.shareLink = function() {
   var jobId = FlowRouter.getQueryParam("id");
   var url = "";
   if(jobId){
-    url = Meteor.absoluteUrl("cpf/" + jobId, {secure: true});
+    url = Meteor.absoluteUrl("cpf/" + jobId, {
+      secure: true,
+      rootUrl: window.location.origin
+    });
   }
   return url;
 };

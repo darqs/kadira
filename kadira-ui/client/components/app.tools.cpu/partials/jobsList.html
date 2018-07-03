@@ -4,7 +4,6 @@
       {{#if state$isProfileList}}
         <div id="pf-main-title">
           <a href="#" class="btn btn-sm no-bg btn-default" id="new-cpu-profile">{{i18n "tools.take_remote_profile"}}</a>
-          <a href="http://debug.kadiraio.com/debug?tab=cpu-profiler" target="_blank" id="go-to-remote-profile" class="btn btn-sm">{{i18n "tools.visit_kadira_debug_to_local_profiles"}}</a>
         </div>
         {{#render component="loading" isLoadingFn=stateFn$isLoadingJobs}}
           {{#each state$jobsList}}
